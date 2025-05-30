@@ -7,12 +7,15 @@ import com.softdev.delivery_routing.domain.repositories.EntregaRepositoryPort;
 
 @Service
 public class ActualizarEstadoEntregaService {
+    /**
+     * Repositorio de entregas para acceder a los datos de las entregas.
+     */
     private final EntregaRepositoryPort entregaRepository;
 
     /**
      * Caso de uso para actualizar el estado de una entrega.
      * Permite cambiar el estado de un pedido y verificar que el repartidor asignado es el correcto.
-     * 
+     *
      * @param entregaRepositoryParam Repositorio de entregas para acceder a los datos de las entregas.
      */
     public ActualizarEstadoEntregaService(final EntregaRepositoryPort entregaRepositoryParam) {

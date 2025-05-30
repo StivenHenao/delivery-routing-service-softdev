@@ -48,6 +48,10 @@ public class EntregaResponseDTO {
      * Fecha y hora en que se realizó el pedido.
      */
     private LocalDateTime fechaUltimaActualizacion;
+    /**
+     * Dirección de entrega del pedido.
+     */
+    private String direccionEntrega;
 
     /**
      * Constructor por defecto.

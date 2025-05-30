@@ -4,6 +4,9 @@ import com.softdev.delivery_routing.use_cases.service.ActualizarEstadoEntregaSer
 import com.softdev.delivery_routing.use_cases.service.ObtenerEntregaService;
 import com.softdev.delivery_routing.use_cases.service.dtos.ActualizarEstadoRequestDTO;
 import com.softdev.delivery_routing.use_cases.service.dtos.EntregaResponseDTO;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Permite rastrear el estado de una entrega y actualizar su estado.
  */
 @RestController
-@RequestMapping("/api/delivery")
+@RequestMapping("/delivery")
 public class EntregaController {
 
     /**
@@ -32,13 +35,13 @@ public class EntregaController {
     /**
      * Constructor del controlador de entrega.
      *
-     * @param obtenerEntregaService Servicio para obtener una entrega por su ID de orden.
-     * @param actualizarEstadoEntregaService Servicio para actualizar el estado de una entrega.
+     * @param obtenerEntregaServiceParam Servicio para obtener una entrega por su ID de orden.
+     * @param actualizarEstadoEntregaServiceParam Servicio para actualizar el estado de una entrega.
      */
-    public EntregaController(final ObtenerEntregaService obtenerEntregaService, 
-                           final ActualizarEstadoEntregaService actualizarEstadoEntregaService) {
-        this.obtenerEntregaService = obtenerEntregaService;
-        this.actualizarEstadoEntregaService = actualizarEstadoEntregaService;
+    public EntregaController(final ObtenerEntregaService obtenerEntregaServiceParam,
+                           final ActualizarEstadoEntregaService actualizarEstadoEntregaServiceParam) {
+        this.obtenerEntregaService = obtenerEntregaServiceParam;
+        this.actualizarEstadoEntregaService = actualizarEstadoEntregaServiceParam;
     }
 
     /**
@@ -66,10 +69,10 @@ public class EntregaController {
     public ResponseEntity<String> actualizarEstadoEntrega(
             final @PathVariable String ordenId,
             final @RequestBody ActualizarEstadoRequestDTO request) {
-        
+
         boolean actualizado = actualizarEstadoEntregaService.actualizar(
-            ordenId, 
-            request.getNuevoEstado(), 
+            ordenId,
+            request.getNuevoEstado(),
             request.getRepartidorId()
         );
 
@@ -79,5 +82,17 @@ public class EntregaController {
             return ResponseEntity.badRequest()
                 .body("No se pudo actualizar el estado. Verifique el ID de la orden y repartidor.");
         }
+    }
+
+    /**
+     * Endpoint para obtener todas las órdenes asignadas a un repartidor específico.
+     *
+     * @param repartidorId Identificador del repartidor.
+     * @return ResponseEntity con una lista de DTOs de entregas asignadas al repartidor.
+     */
+    @GetMapping("/repartidor/{repartidorId}")
+    public ResponseEntity<List<EntregaResponseDTO>> obtenerOrdenesPorRepartidor(final @PathVariable String repartidorId) {
+        List<EntregaResponseDTO> entregas = obtenerEntregaService.obtenerPorRepartidorId(repartidorId);
+        return ResponseEntity.ok(entregas);
     }
 }

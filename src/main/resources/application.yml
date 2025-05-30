@@ -1,0 +1,12 @@
+server:
+  port: 8085
+
+user-service:
+  base-url: http://localhost:8080  # URL del user-service
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest

@@ -9,18 +9,21 @@ import com.softdev.delivery_routing.domain.model.Repartidor;
  * Permite obtener un repartidor disponible y buscar un repartidor por su identificador.
  */
 public interface RepartidorServicePort {
+
     /**
-     * Guarda un repartidor en el repositorio.
+     * Obtiene un repartidor disponible para asignar a una orden.
+     * Realiza una llamada al user-service para obtener la lista de repartidores
+     * y selecciona uno basado en el hash del ID de la orden.
      *
-     * @param repartidor el repartidor a guardar
-     * @return el repartidor guardado
+     * @param ordenId el identificador de la orden para la cual se busca un repartidor
+     * @return un Optional que contiene el repartidor disponible si se encuentra, o vacío si no
      */
-    Optional<Repartidor> obtenerRepartidorDisponible();
+    Optional<Repartidor> obtenerRepartidorDisponible(String ordenId);
     /**
      * Busca un repartidor por su identificador.
      *
      * @param id el identificador del repartidor
      * @return un Optional que contiene el repartidor si se encuentra, o vacío si no
      */
-    Optional<Repartidor> obtenerRepartidorPorId(final String id);
+    Optional<Repartidor> obtenerRepartidorPorId(String id);
 }

@@ -11,7 +11,7 @@ public class Repartidor {
     /**
      * Identificador único del repartidor.
      */
-    private String id;
+    private String dni;
     /**
      * Nombre del repartidor.
      */
@@ -38,14 +38,14 @@ public class Repartidor {
     /**
      * Constructor con parámetros.
      *
-     * @param idParam       Identificador del repartidor.
+     * @param dniParam       Identificador del repartidor.
      * @param nombreParam   Nombre del repartidor.
      * @param telefonoParam Número de teléfono del repartidor.
      * @param emailParam    Correo electrónico del repartidor.
      */
-    public Repartidor(final String idParam, final String nombreParam, final String telefonoParam,
+    public Repartidor(final String dniParam, final String nombreParam, final String telefonoParam,
                     final String emailParam) {
-        this.id = idParam;
+        this.dni = dniParam;
         this.nombre = nombreParam;
         this.telefono = telefonoParam;
         this.email = emailParam;

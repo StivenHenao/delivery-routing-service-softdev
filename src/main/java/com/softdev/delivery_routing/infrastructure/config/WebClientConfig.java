@@ -10,7 +10,11 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 @Configuration
 public class WebClientConfig {
-
+    /**
+     * Tamaño máximo de memoria para el WebClient.
+     * Se establece en 1 MB.
+     */
+    private static final int MAX_MEMORY_SIZE = 1024 * 1024; // 1 MB
     /**
      * Crea un bean de WebClient.Builder con configuración personalizada.
      * Establece el tamaño máximo de memoria y el tiempo de espera.
@@ -20,7 +24,7 @@ public class WebClientConfig {
     @Bean
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder()
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(MAX_MEMORY_SIZE))
             .build()
             .mutate();
     }

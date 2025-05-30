@@ -1,18 +1,18 @@
 package com.softdev.delivery_routing.use_cases.service.dtos;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import lombok.Data;
-import lombok.Getter;
-
 /**
- * Clase que representa una orden con detalles de un pedido.
+ * DTO que representa una orden con sus detalles.
+ * Incluye información del cliente, detalles de la factura y el método de pago.
  */
 @Data
-@Getter
 public class OrdenConDetallesDTO {
+
     /**
      * Identificador único de la orden.
      */
@@ -30,13 +30,17 @@ public class OrdenConDetallesDTO {
      */
     private String dniCliente;
     /**
+     * Dirección de entrega del pedido.
+     */
+    private String direccion;
+    /**
      * Detalles del pedido, como productos y cantidades.
      */
-    private List<String> detalles;
+    private List<DetalleFacturaDTO> detalles;
     /**
      * Método de pago utilizado para el pedido.
      */
-    private String metodoPago;
+    private MetodoPagoFacturaDTO metodoPago;
     /**
      * Valor total del pedido.
      */
@@ -47,9 +51,36 @@ public class OrdenConDetallesDTO {
     private LocalDateTime fechaPedido;
 
     /**
-     * Constructor por defecto.
-     * Este constructor es necesario para la serialización y deserialización de objetos.
+     * Estado actual de la entrega.
      */
-    public OrdenConDetallesDTO() {
+    @Data
+    public static class DetalleFacturaDTO {
+        /**
+         * Identificador único del detalle de la factura.
+         */
+        private String nombreProducto;
+        /**
+         * Cantidad del producto en el detalle de la factura.
+         */
+        private int cantidad;
+        /**
+         * Precio unitario del producto en el detalle de la factura.
+         */
+        private double precioUnitario;
+        /**
+         * Subtotal del detalle de la factura (cantidad * precio unitario).
+         */
+        private double subtotal;
+    }
+
+    /**
+     * Método de pago utilizado para el pedido.
+     */
+    @Data
+    public static class MetodoPagoFacturaDTO {
+        /**
+         * Identificador único del método de pago.
+         */
+        private String nombre;
     }
 }

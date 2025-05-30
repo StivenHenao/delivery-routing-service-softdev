@@ -48,25 +48,28 @@ public class ProcesarOrdenService {
             ordenDto.getEmailCliente(),
             ordenDto.getNombreCliente(),
             ordenDto.getDniCliente(),
+            ordenDto.getDireccion(),
             ordenDto.getDetalles(),
             ordenDto.getMetodoPago(),
             ordenDto.getValorTotal(),
             ordenDto.getFechaPedido()
         );
-        
+
         entrega.setId(UUID.randomUUID().toString());
 
         // Asignar repartidor disponible
-        repartidorService.obtenerRepartidorDisponible()
-            .ifPresent(repartidor -> entrega.asignarRepartidor(
-                repartidor.getId(),
-                repartidor.getNombre(),
-                repartidor.getTelefono()
-            ));
+        repartidorService.obtenerRepartidorDisponible(entrega.getOrdenId())
+            .ifPresentOrElse(repartidor -> {
+                entrega.asignarRepartidor(
+                    repartidor.getDni(),
+                    repartidor.getNombre(),
+                    repartidor.getTelefono()
+                );
+                entregaRepository.save(entrega);
+            }, () -> {
+                throw new IllegalStateException("No hay repartidores disponibles para procesar la orden: " + ordenDto.getId());
+            });
 
-        // Guardar la entrega
-        entregaRepository.save(entrega);
-        
         System.out.println("Entrega procesada y asignada: " + entrega.getOrdenId());
     }
 }

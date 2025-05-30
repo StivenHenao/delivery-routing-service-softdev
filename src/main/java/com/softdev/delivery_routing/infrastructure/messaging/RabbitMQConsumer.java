@@ -1,11 +1,14 @@
 package com.softdev.delivery_routing.infrastructure.messaging;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.softdev.delivery_routing.infrastructure.config.RabbitMQConfig;
 import com.softdev.delivery_routing.use_cases.service.ProcesarOrdenService;
 import com.softdev.delivery_routing.use_cases.service.dtos.OrdenConDetallesDTO;
 
+@Component
 public class RabbitMQConsumer {
     /**
      * Servicio para procesar órdenes.
@@ -27,24 +30,22 @@ public class RabbitMQConsumer {
         this.objectMapper = objectMapperParam;
     }
     /**
-     * Método que escucha el mensaje de la cola de RabbitMQ y procesa la orden recibida.
+     * Método que escucha la cola de RabbitMQ y procesa las órdenes recibidas.
      *
-     * @param mensaje El mensaje recibido de la cola, que contiene los detalles de la orden.
+     * @param ordenDto DTO que contiene los detalles de la orden a procesar.
      */
-    @RabbitListener(queues = "purchase.order.queue")
-    public void recibirOrden(final String mensaje) {
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
+    public void recibirOrden(final OrdenConDetallesDTO ordenDto) {
         try {
-            System.out.println("Orden recibida: " + mensaje);
-            
-            // Deserializar el DTO de la orden
-            OrdenConDetallesDTO ordenDto = objectMapper.readValue(mensaje, OrdenConDetallesDTO.class);
-            
+            System.out.println("Orden recibida: " + ordenDto);
+
             // Procesar la orden
             procesarOrdenService.procesar(ordenDto);
-            
+
         } catch (Exception e) {
             System.err.println("Error al procesar orden: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 }

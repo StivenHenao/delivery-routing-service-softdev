@@ -1,5 +1,6 @@
 package com.softdev.delivery_routing.domain.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.softdev.delivery_routing.domain.model.Entrega;
@@ -16,19 +17,28 @@ public interface  EntregaRepositoryPort {
      * @param entrega la entrega a guardar
      * @return la entrega guardada
      */
-    Entrega save(final Entrega entrega);
+    Entrega save(Entrega entrega);
     /**
      * Busca una entrega por su identificador.
      *
      * @param id el identificador de la entrega
      * @return un Optional que contiene la entrega si se encuentra, o vacío si no
      */
-    Optional<Entrega> findByOrdenId(final String id);
+    Optional<Entrega> findByOrdenId(String id);
     /**
      * Actualiza el estado de una entrega.
      *
      * @param ordenId el identificador de la orden asociada a la entrega
      * @param estado el nuevo estado del pedido
      */
-    void updateEstado(final String ordenId, final EstadoPedido estado);
+    void updateEstado(String ordenId, EstadoPedido estado);
+
+    /**
+     * Busca entregas asociadas a un repartidor por su identificador.
+     *
+     * @param repartidorId el identificador del repartidor
+     * @return una lista de entregas asociadas al repartidor
+     */
+    List<Entrega> findByRepartidorId(String repartidorId);
+
 }

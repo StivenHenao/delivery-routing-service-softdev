@@ -3,6 +3,9 @@ package com.softdev.delivery_routing.domain.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.softdev.delivery_routing.use_cases.service.dtos.OrdenConDetallesDTO;
 
 import lombok.Data;
 import lombok.Getter;
@@ -35,6 +38,10 @@ public class Entrega {
      * DNI del cliente que realizó el pedido.
      */
     private String dniCliente;
+    /**
+     * Dirección de entrega del pedido.
+     */
+    private String direccion;
     /**
      * Detalles del pedido, como productos y cantidades.
      */
@@ -86,30 +93,36 @@ public class Entrega {
     }
 
     /**
-     * Constructor que inicializa los campos de la entrega.
+     * Constructor que inicializa una entrega con los detalles de la orden.
      *
      * @param ordenIdParam Identificador de la orden asociada a la entrega.
      * @param emailClienteParam Email del cliente que realizó el pedido.
      * @param nombreClienteParam Nombre del cliente que realizó el pedido.
      * @param dniClienteParam DNI del cliente que realizó el pedido.
+     * @param direccionParam Dirección de entrega del pedido.
      * @param detallesParam Detalles del pedido, como productos y cantidades.
      * @param metodoPagoParam Método de pago utilizado para el pedido.
      * @param valorTotalParam Valor total del pedido.
      * @param fechaPedidoParam Fecha y hora en que se realizó el pedido.
      */
-    public Entrega(final String ordenIdParam, final String emailClienteParam, final String nombreClienteParam, 
-                   final String dniClienteParam, final List<String> detallesParam, final String metodoPagoParam, 
-                   final BigDecimal valorTotalParam, final LocalDateTime fechaPedidoParam) {
+    public Entrega(final String ordenIdParam, final String emailClienteParam, final String nombreClienteParam,
+                final String dniClienteParam, final String direccionParam, final List<OrdenConDetallesDTO.DetalleFacturaDTO> detallesParam,
+                final OrdenConDetallesDTO.MetodoPagoFacturaDTO metodoPagoParam,
+                final BigDecimal valorTotalParam, final LocalDateTime fechaPedidoParam) {
         this();
         this.ordenId = ordenIdParam;
         this.emailCliente = emailClienteParam;
         this.nombreCliente = nombreClienteParam;
         this.dniCliente = dniClienteParam;
-        this.detalles = detallesParam;
-        this.metodoPago = metodoPagoParam;
+        this.direccion = direccionParam;
+        this.detalles = detallesParam.stream()
+            .map(detalle -> detalle.getNombreProducto() + " (x" + detalle.getCantidad() + ")")
+            .collect(Collectors.toList());
+        this.metodoPago = metodoPagoParam.getNombre();
         this.valorTotal = valorTotalParam;
         this.fechaPedido = fechaPedidoParam;
     }
+
 
     /**
      * Asigna un repartidor a la entrega.

@@ -1,15 +1,17 @@
 package com.softdev.delivery_routing.infrastructure.adapters;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.softdev.delivery_routing.domain.model.Repartidor;
 import com.softdev.delivery_routing.domain.repositories.RepartidorServicePort;
 
 import lombok.Data;
-import lombok.Getter;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -22,7 +24,7 @@ import java.util.Random;
  */
 @Service
 public class UserServiceRepartidorAdapter implements RepartidorServicePort {
-    
+
     /**
      * Cliente WebClient para realizar llamadas al user-service.
      * Utiliza la URL base configurada en application.properties.
@@ -33,12 +35,12 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
      * Se usa para simular la selección aleatoria de un repartidor.
      */
     private final Random random = new Random();
-    
+
     /**
      * URL base del user-service, configurada en application.properties.
      * Permite cambiar la URL sin modificar el código.
      */
-    @Value("${user-service.base-url:http://localhost:8081}")
+    @Value("${user-service.base-url:http://localhost:8080}")
     private String userServiceBaseUrl;
 
     /**
@@ -52,40 +54,40 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
     }
 
     /**
-     * Obtiene un repartidor disponible del user-service.
-     * Realiza una llamada asíncrona para obtener la lista de repartidores
-     * y selecciona uno aleatoriamente.
+     * Obtiene un repartidor disponible para asignar a una orden.
+     * Realiza una llamada sincrónica al user-service para obtener la lista de repartidores
+     * y selecciona uno basado en el hash del ID de la orden.
      *
-     * @return Un Optional que contiene el repartidor seleccionado, o vacío si no hay repartidores disponibles.
+     * @param ordenId Identificador de la orden para la cual se busca un repartidor.
+     * @return Un Optional que contiene el repartidor disponible si se encuentra, o vacío si no.
      */
     @Override
-    public Optional<Repartidor> obtenerRepartidorDisponible() {
+    public Optional<Repartidor> obtenerRepartidorDisponible(final String ordenId) {
         try {
-            // Llamada asíncrona al user-service para obtener repartidores
             List<UserServiceUserDTO> repartidores = webClient
                 .get()
-                .uri(userServiceBaseUrl + "/api/users/repartidores")
+                .uri(userServiceBaseUrl + "/usuario/repartidores")
                 .retrieve()
                 .bodyToFlux(UserServiceUserDTO.class)
                 .collectList()
-                .block(); // Para este caso usamos block(), en producción considera usar reactive streams completamente
+                .block();
 
             if (repartidores != null && !repartidores.isEmpty()) {
-                // Seleccionar repartidor aleatorio
-                UserServiceUserDTO repartidorSeleccionado = repartidores.get(
-                    random.nextInt(repartidores.size())
-                );
-                
+                // Ordenar la lista de repartidores por ID o cualquier campo estable para mantener el orden
+                repartidores.sort(Comparator.comparing(UserServiceUserDTO::getDni));
+
+                // Usar el hash del ordenId para seleccionar el repartidor
+                int hashPedido = Math.abs(ordenId.hashCode());
+                int index = hashPedido % repartidores.size();
+
+                UserServiceUserDTO repartidorSeleccionado = repartidores.get(index);
+
                 return Optional.of(convertirARepartidor(repartidorSeleccionado));
             }
-            
-            return Optional.empty();
-            
-        } catch (WebClientResponseException e) {
-            System.err.println("Error al obtener repartidores del user-service: " + e.getMessage());
+
             return Optional.empty();
         } catch (Exception e) {
-            System.err.println("Error inesperado al comunicarse con user-service: " + e.getMessage());
+            e.printStackTrace();
             return Optional.empty();
         }
     }
@@ -102,7 +104,7 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
         try {
             UserServiceUserDTO usuario = webClient
                 .get()
-                .uri(userServiceBaseUrl + "/api/users/{id}", repartidorId)
+                .uri(userServiceBaseUrl + "usuario/dni/{id}", repartidorId)
                 .retrieve()
                 .bodyToMono(UserServiceUserDTO.class)
                 .block();
@@ -110,9 +112,9 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
             if (usuario != null && "REPARTIDOR".equals(usuario.getRol())) {
                 return Optional.of(convertirARepartidor(usuario));
             }
-            
+
             return Optional.empty();
-            
+
         } catch (WebClientResponseException e) {
             System.err.println("Repartidor no encontrado con ID: " + repartidorId);
             return Optional.empty();
@@ -121,7 +123,7 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
             return Optional.empty();
         }
     }
-    
+
     /**
      * Convierte un UserServiceUserDTO a un objeto Repartidor.
      * Utiliza los datos del DTO para crear una instancia de Repartidor.
@@ -131,13 +133,19 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
      */
     private Repartidor convertirARepartidor(final UserServiceUserDTO userDto) {
         return new Repartidor(
-            userDto.getId(),
+            userDto.getDni(),
             userDto.getNombre(),
             generatePhoneNumber(), // Generar teléfono temporal o obtenerlo de otra fuente
             userDto.getEmail()
         );
     }
-    
+
+    /**
+     * Número máximo para generar el teléfono simulado.
+     * Este valor se utiliza para generar un número de teléfono aleatorio en formato +57-300-XXXXXXX.
+     */
+    private static final int TELEFONO_MAXIMO = 10000000; // Número máximo para generar el teléfono
+
     /**
      * Genera un número de teléfono temporal para el repartidor.
      * En producción, este valor debería provenir del user-service o de otra fuente confiable.
@@ -147,7 +155,7 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
     private String generatePhoneNumber() {
         // Generar número temporal o usar valor por defecto
         // En producción, esto debería venir de user-service o otra fuente
-        return "+57-300-" + String.format("%07d", random.nextInt(10000000));
+        return "+57-300-" + String.format("%07d", random.nextInt(TELEFONO_MAXIMO));
     }
 }
 
@@ -157,12 +165,11 @@ public class UserServiceRepartidorAdapter implements RepartidorServicePort {
  */
 // DTO para comunicación con user-service
 @Data
-@Getter
 class UserServiceUserDTO {
     /**
      * Identificador único del usuario.
      */
-    private String id;
+    private String dni;
     /**
      * Correo electrónico del usuario.
      */
@@ -179,12 +186,13 @@ class UserServiceUserDTO {
     /**
      * Rol del usuario (debe ser "REPARTIDOR" para los repartidores).
      */
+    @JsonProperty("role")
     private String rol;
 
     /**
      * Constructor por defecto necesario para la deserialización del DTO.
      * Este constructor es requerido por Spring para crear instancias del DTO.
      */
-    public UserServiceUserDTO() {
+    UserServiceUserDTO() {
     }
 }

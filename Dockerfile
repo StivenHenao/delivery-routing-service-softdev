@@ -8,8 +8,8 @@ RUN mvn clean package -DskipTests
 
 FROM   eclipse-temurin:21-jre
 
-COPY --from=builder /app/target/purchase-order-service-0.0.1-SNAPSHOT.jar /app/purchase-order-service.jar
+COPY --from=builder /app/target/delivery-routing-service-0.0.1-SNAPSHOT.jar /app/delivery-routing-service.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "/app/purchase-order-service.jar"]
+CMD ["java", "-jar", "/app/delivery-routing-service.jar"]

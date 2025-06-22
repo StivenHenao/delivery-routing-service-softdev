@@ -28,6 +28,10 @@ jobs:
 
       - name: 🧪 Ejecutar pruebas
         run: mvn test
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
       - name: 🧪 Ejecutar pruebas con cobertura
         run: mvn test jacoco:report

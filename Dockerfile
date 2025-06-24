@@ -11,6 +11,6 @@ FROM   eclipse-temurin:21-jre
 
 COPY --from=builder /app/target/delivery-routing-service-0.0.1-SNAPSHOT.jar /app/delivery-routing-service.jar
 
-EXPOSE 8080
+EXPOSE 8084
 
 CMD ["java", "-jar", "/app/delivery-routing-service.jar"]

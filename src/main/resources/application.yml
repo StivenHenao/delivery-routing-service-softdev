@@ -1,22 +1,51 @@
-server:
-  port: 8085
-
 user-service:
-  base-url: http://localhost:8080  # URL del user-service
+  base-url: lb://user-service # URL del user-service
+
+# spring:
+#   rabbitmq:
+#     host: localhost
+#     port: 5672
+#     username: guest
+#     password: guest
 
 spring:
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
+    host: ${RABBITMQ_HOST:rabbitmq-service.messaging.svc.cluster.local}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:rabbitmq123}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
+    connection-timeout: 60000
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        max-interval: 10000
+        multiplier: 1.0
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+          max-interval: 10000
+          multiplier: 1.0
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka-service:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+    enabled: true
   instance:
+    instance-id: ${spring.application.name}:${POD_IP}:${server.port}
+    hostname: delivery-routing-service
     prefer-ip-address: false
     health-check-url-path: /actuator/health
     status-page-url-path: /actuator/info
